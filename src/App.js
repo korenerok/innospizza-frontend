@@ -8,6 +8,7 @@ import Check from './components/Check';
 class App extends React.Component {
   constructor(props){
     super(props);
+    this.handleAddItem=this.handleAddItem.bind(this);
     this.state={
       misc_items:[],
       pizzas:[],
@@ -25,12 +26,27 @@ class App extends React.Component {
     });
   }
 
+  handleAddItem(item){
+    let index=this.state.order.findIndex((order_item)=> item.id===order_item.id);
+    if(index> -1){
+      let order=this.state.order;
+      order[index].quantity= parseInt(order[index].quantity) + parseInt(item.quantity);
+      order[index].subtotal = parseFloat(order[index].subtotal) + parseFloat(item.price);
+      this.setState({order});
+    }else{
+      this.setState((prevState)=>({ 
+        order:prevState.order.concat({id:item.id,name:item.name,quantity:parseInt(item.quantity),price:parseFloat(item.price),subtotal:parseFloat(item.subtotal)})
+       }));  
+    }
+    this.setState((prevstate)=>({order_total:prevstate.order.reduce((accumulator,current)=> accumulator+current.subtotal,0)}));
+	}
+
   render(){
     return (
       <div className="App">
         <Header />
-        <Menu pizzas={this.state.pizzas} misc={this.state.misc_items} />
-        <Check />
+        <Menu pizzas={this.state.pizzas} misc={this.state.misc_items} handleAddItem={this.handleAddItem} />
+        <Check items={this.state.order} total={this.state.order_total} />
       </div>
     );
   }
