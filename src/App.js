@@ -1,4 +1,5 @@
 import React from 'react';
+import axios from 'axios';
 import './App.css';
 import Header from './components/Header';
 import Menu from './components/Menu';
@@ -15,11 +16,20 @@ class App extends React.Component {
     };
   }
 
+  componentDidMount(){
+    axios.get('http://localhost:8000/api/items').then((response) =>{
+      this.setState({
+        pizzas:response.data.pizzas,
+        misc_items:response.data.misc
+      });
+    });
+  }
+
   render(){
     return (
       <div className="App">
         <Header />
-        <Menu />
+        <Menu pizzas={this.state.pizzas} misc={this.state.misc_items} />
         <Check />
       </div>
     );
