@@ -11,11 +11,16 @@ class App extends React.Component {
     this.handleAddItem=this.handleAddItem.bind(this);
     this.handleChangeQuantityItem=this.handleChangeQuantityItem.bind(this);
     this.handleRemoveItem=this.handleRemoveItem.bind(this);
+    this.handleInputChange=this.handleInputChange.bind(this);
+    this.submitOrder=this.submitOrder.bind(this);
     this.state={
       misc_items:[],
       pizzas:[],
       order:[],
-      order_total:0
+      address:'',
+      phone:'',
+      name:'',
+      order_total:0,
     };
   }
 
@@ -61,12 +66,33 @@ class App extends React.Component {
     this.setState((prevstate)=>({order_total:prevstate.order.reduce((accumulator,current)=> accumulator+current.subtotal,0)}));
   }
 
+  handleInputChange(event) {
+    const value = event.target.value;
+    const name = event.target.name;
+
+    this.setState({
+      [name]: value
+    });
+  }
+
+  submitOrder(){
+    axios.post('http://localhost:8000/api/orders',{
+      items:this.state.order,
+      name:this.state.name,
+      phone:this.state.phone,
+      address:this.state.address,
+      price:this.state.order_total
+    })
+    .then((response)=>(console.log(response.data)))
+    .catch((error)=>(console.log(error)));
+  }
+
   render(){
     return (
       <div className="App">
         <Header />
         <Menu pizzas={this.state.pizzas} misc={this.state.misc_items} handleAddItem={this.handleAddItem} />
-        <Check items={this.state.order} total={this.state.order_total} handleChangeQuantityItem= {this.handleChangeQuantityItem} handleRemoveItem={this.handleRemoveItem}/>
+        <Check items={this.state.order} total={this.state.order_total} address={this.state.address} phone={this.state.phone} name={this.state.name} handleChangeQuantityItem= {this.handleChangeQuantityItem} handleRemoveItem={this.handleRemoveItem} handleInputChange={this.handleInputChange} submitOrder={this.submitOrder}/>
       </div>
     );
   }
