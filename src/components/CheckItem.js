@@ -7,6 +7,7 @@ const CheckItem = (props)=>(
             <p className="check-item__text">{props.name}</p>
             <p className="check-item__text">{props.price}</p>
             <p className="check-item__text">{props.subtotal}</p>
+            <button onClick={()=>props.handleRemoveItem(props.id)}>Remove</button>
         </li>
     </div>
 );

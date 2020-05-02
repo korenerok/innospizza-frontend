@@ -10,6 +10,7 @@ class App extends React.Component {
     super(props);
     this.handleAddItem=this.handleAddItem.bind(this);
     this.handleChangeQuantityItem=this.handleChangeQuantityItem.bind(this);
+    this.handleRemoveItem=this.handleRemoveItem.bind(this);
     this.state={
       misc_items:[],
       pizzas:[],
@@ -52,12 +53,20 @@ class App extends React.Component {
     this.setState((prevstate)=>({order_total:prevstate.order.reduce((accumulator,current)=> accumulator+current.subtotal,0)}));
   }
 
+  handleRemoveItem(id){
+    let index=this.state.order.findIndex((order_item)=> id===order_item.id);
+    let order=this.state.order;
+    order.splice(index,1);
+    this.setState({order});
+    this.setState((prevstate)=>({order_total:prevstate.order.reduce((accumulator,current)=> accumulator+current.subtotal,0)}));
+  }
+
   render(){
     return (
       <div className="App">
         <Header />
         <Menu pizzas={this.state.pizzas} misc={this.state.misc_items} handleAddItem={this.handleAddItem} />
-        <Check items={this.state.order} total={this.state.order_total} handleChangeQuantityItem= {this.handleChangeQuantityItem}/>
+        <Check items={this.state.order} total={this.state.order_total} handleChangeQuantityItem= {this.handleChangeQuantityItem} handleRemoveItem={this.handleRemoveItem}/>
       </div>
     );
   }
