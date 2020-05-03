@@ -33,6 +33,10 @@ class App extends React.Component {
     });
   }
 
+  updateOrderTotal(){
+    this.setState((prevstate)=>({order_total:prevstate.order.reduce((accumulator,current)=> accumulator+current.subtotal,0)}));
+  }
+
   handleAddItem(item){
     let index=this.state.order.findIndex((order_item)=> item.id===order_item.id);
     if(index> -1){
@@ -45,7 +49,7 @@ class App extends React.Component {
         order:prevState.order.concat({id:item.id,name:item.name,quantity:parseInt(item.quantity),price:parseFloat(item.price),subtotal:parseFloat(item.subtotal)})
        }));  
     }
-    this.setState((prevstate)=>({order_total:prevstate.order.reduce((accumulator,current)=> accumulator+current.subtotal,0)}));
+    this.updateOrderTotal();
 	}
 
   handleChangeQuantityItem(event,id){
@@ -55,7 +59,7 @@ class App extends React.Component {
     order[index].quantity=value;
     order[index].subtotal = parseFloat(order[index].price) * value;
     this.setState({order});
-    this.setState((prevstate)=>({order_total:prevstate.order.reduce((accumulator,current)=> accumulator+current.subtotal,0)}));
+    this.updateOrderTotal();
   }
 
   handleRemoveItem(id){
@@ -63,13 +67,12 @@ class App extends React.Component {
     let order=this.state.order;
     order.splice(index,1);
     this.setState({order});
-    this.setState((prevstate)=>({order_total:prevstate.order.reduce((accumulator,current)=> accumulator+current.subtotal,0)}));
+    this.updateOrderTotal();
   }
 
   handleInputChange(event) {
     const value = event.target.value;
     const name = event.target.name;
-
     this.setState({
       [name]: value
     });
@@ -83,7 +86,8 @@ class App extends React.Component {
       address:this.state.address,
       price:this.state.order_total
     })
-    .then((response)=>(console.log(response.data)))
+    .then((response)=>(
+      console.log(response.data)))
     .catch((error)=>(console.log(error)));
   }
 
