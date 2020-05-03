@@ -25,7 +25,7 @@ class App extends React.Component {
   }
 
   componentDidMount(){
-    axios.get('http://localhost:8000/api/items').then((response) =>{
+    axios.get(process.env.REACT_APP_API_URL+'api/items/').then((response) =>{
       this.setState({
         pizzas:response.data.pizzas,
         misc_items:response.data.misc
@@ -79,7 +79,7 @@ class App extends React.Component {
   }
 
   submitOrder(){
-    axios.post('http://localhost:8000/api/orders',{
+    axios.post(process.env.REACT_APP_API_URL+'api/orders',{
       items:this.state.order,
       name:this.state.name,
       phone:this.state.phone,
