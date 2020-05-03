@@ -25,7 +25,7 @@ class App extends React.Component {
   }
 
   componentDidMount(){
-    axios.get(process.env.REACT_APP_API_URL+'api/items/')
+    axios.get(process.env.REACT_APP_API_URL+'api/items')
     .then((response) =>{
       this.setState({
         pizzas:response.data.pizzas,
