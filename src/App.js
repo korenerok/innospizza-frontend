@@ -25,12 +25,14 @@ class App extends React.Component {
   }
 
   componentDidMount(){
-    axios.get(process.env.REACT_APP_API_URL+'api/items/').then((response) =>{
+    axios.get(process.env.REACT_APP_API_URL+'api/items/')
+    .then((response) =>{
       this.setState({
         pizzas:response.data.pizzas,
         misc_items:response.data.misc
       });
-    });
+    })
+    .catch((error)=>(console.log(error)));
   }
 
   updateOrderTotal(){
