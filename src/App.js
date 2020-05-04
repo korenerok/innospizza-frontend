@@ -20,7 +20,10 @@ class App extends React.Component {
       address:'',
       phone:'',
       name:'',
-      order_total:0,
+      usd_rate:'',
+      delivery:process.env.REACT_APP_DELIVERY_COST,
+      order_total:process.env.REACT_APP_DELIVERY_COST,
+      errors:[]
     };
   }
 
@@ -33,10 +36,18 @@ class App extends React.Component {
       });
     })
     .catch((error)=>(console.log(error)));
+    axios.get(process.env.REACT_APP_RATE_API_URL)
+    .then((response) =>{
+      this.setState({
+        usd_rate:response.data.rates.USD
+      });
+    })
+    .catch((error)=>(console.log(error)));
+
   }
 
   updateOrderTotal(){
-    this.setState((prevstate)=>({order_total:prevstate.order.reduce((accumulator,current)=> accumulator+current.subtotal,0)}));
+    this.setState((prevstate)=>({order_total:prevstate.order.reduce((accumulator,current)=> accumulator+current.subtotal,parseFloat(this.state.delivery))}));
   }
 
   handleAddItem(item){
@@ -80,25 +91,53 @@ class App extends React.Component {
     });
   }
 
+  orderCreated(id){
+    this.setState({
+      order:[],
+      address:'',
+      phone:'',
+      name:'',
+    });
+    alert('Your order number is '+id+'. Soon it will arrive to the address you entered. Buon appetito!');
+    this.updateOrderTotal();
+  }
+
   submitOrder(){
-    axios.post(process.env.REACT_APP_API_URL+'api/orders',{
-      items:this.state.order,
-      name:this.state.name,
-      phone:this.state.phone,
-      address:this.state.address,
-      price:this.state.order_total
-    })
-    .then((response)=>(
-      console.log(response.data)))
-    .catch((error)=>(console.log(error)));
+    let errors=[];
+    if(this.state.name.length===0){
+      errors.push('Field Name is required');
+    }
+    if(this.state.phone.length===0){
+      errors.push('Field Phone is required');
+    }
+    if(this.state.address.length===0){
+      errors.push('Field Address is required');
+    }
+    if(this.state.order.length===0){
+      errors.push('Order must have at least one Item');
+    }
+    this.setState({errors});
+    if(errors.length===0){
+      axios.post(process.env.REACT_APP_API_URL+'api/orders',{
+        items:this.state.order,
+        name:this.state.name,
+        phone:this.state.phone,
+        address:this.state.address,
+        price:this.state.order_total
+      })
+      .then((response)=>(
+        //console.log(response.data)))
+        this.orderCreated(response.data)))
+      .catch((error)=>(console.log(error)));
+    }
   }
 
   render(){
     return (
       <div className="App">
         <Header />
-        <Menu pizzas={this.state.pizzas} misc={this.state.misc_items} handleAddItem={this.handleAddItem} />
-        <Check items={this.state.order} total={this.state.order_total} address={this.state.address} phone={this.state.phone} name={this.state.name} handleChangeQuantityItem= {this.handleChangeQuantityItem} handleRemoveItem={this.handleRemoveItem} handleInputChange={this.handleInputChange} submitOrder={this.submitOrder}/>
+        <Menu pizzas={this.state.pizzas} misc={this.state.misc_items} rate={this.state.usd_rate} handleAddItem={this.handleAddItem} />
+        <Check items={this.state.order} total={this.state.order_total} rate={this.state.usd_rate} errors={this.state.errors} address={this.state.address} phone={this.state.phone} name={this.state.name} delivery={this.state.delivery} handleChangeQuantityItem= {this.handleChangeQuantityItem} handleRemoveItem={this.handleRemoveItem} handleInputChange={this.handleInputChange} submitOrder={this.submitOrder}/>
       </div>
     );
   }

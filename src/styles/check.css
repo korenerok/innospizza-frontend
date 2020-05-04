@@ -1,7 +1,35 @@
 .check{
     float: right;
-    width: 30%;
+    width: 40%;
     background-color: sandybrown;
+}
+
+.check_input{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    width: 90%;
+    margin:10px auto;
+}
+
+.check_input>input{
+    width: 80%;
+}
+
+.check__submit-button{
+    margin:20px;
+}
+
+.check__errors{
+    color: red;
+}
+.check_prices{
+    margin:0 20px;
+}
+
+#check__titles{
+    margin:20px 15%;
 }
 
 #phone::-webkit-outer-spin-button,#phone::-webkit-inner-spin-button {
@@ -10,4 +38,21 @@
 
 #phone{
     -moz-appearance: textfield;
+}
+
+.check-item{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    margin:10px;
+    list-style: none;
+}
+
+.check-item__number-input{
+    width: 40px;
+}
+
+.check-item__name{
+    flex-basis: 30%;
 }

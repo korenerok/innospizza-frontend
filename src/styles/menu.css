@@ -1,5 +1,18 @@
 .menu{
     float: left;
-    width:70%;
+    width:60%;
     background-color: royalblue;
+}
+
+.menu_category{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-content: space-around;
+}
+
+.menu-item{
+    width: 200px;
+    height: 200px;
 }
