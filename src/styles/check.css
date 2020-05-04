@@ -1,7 +1,7 @@
 .check{
     float: right;
     width: 40%;
-    background-color: sandybrown;
+    background-image: url('../img/paper.jpg');
 }
 
 .check_input{
