@@ -4,6 +4,9 @@ import './App.css';
 import Header from './components/Header';
 import Menu from './components/Menu';
 import Check from './components/Check';
+import UserPanel from './components/UserPanel';
+import LoginPanel from './components/LoginPanel';
+import Cookies from 'universal-cookie';
 
 class App extends React.Component {
   constructor(props){
@@ -13,16 +16,24 @@ class App extends React.Component {
     this.handleRemoveItem=this.handleRemoveItem.bind(this);
     this.handleInputChange=this.handleInputChange.bind(this);
     this.submitOrder=this.submitOrder.bind(this);
+    this.register=this.register.bind(this);
+    this.login=this.login.bind(this);
+    this.logout=this.logout.bind(this);
     this.state={
       misc_items:[],
       pizzas:[],
       order:[],
+      orderHistory:[],
       address:'',
       phone:'',
       name:'',
       usd_rate:'',
       delivery:process.env.REACT_APP_DELIVERY_COST,
       order_total:process.env.REACT_APP_DELIVERY_COST,
+      username:'',
+      usertoken:'',
+      loginError:'',
+      registerError:[],
       errors:[]
     };
   }
@@ -43,7 +54,86 @@ class App extends React.Component {
       });
     })
     .catch((error)=>(console.log(error)));
+    const cookie=new Cookies().get('userToken');
+    if(cookie!=null){
+      this.getUserDetails(cookie);
+    }
+  }
 
+  getUserDetails(token=this.state.usertoken){
+    let request= axios.create({
+      baseURL:process.env.REACT_APP_API_URL,
+      url:'api/details',
+      headers:{'Accept':'application/json','Authorization':'Bearer '+token}
+    });
+    request.post()
+    .then((response) =>{
+      this.setState({
+        username:response.data.success.name
+      });
+    })
+    .catch((error)=>(console.log(error)));
+    //get history order from user
+    request= axios.create({
+      baseURL:process.env.REACT_APP_API_URL,
+      url:'api/orders',
+      headers:{'Accept':'application/json','Authorization':'Bearer '+token}
+    });
+    request.get()
+    .then((response) =>{
+      this.setState({
+        orderHistory:response.data.orders
+      });
+    })
+    .catch((error)=>(console.log(error)));
+  }
+
+  login(event,email,password){
+    event.preventDefault();
+    axios.post(process.env.REACT_APP_API_URL+'api/login',{
+      email:email,
+      password:password
+    })
+    .then((response) =>{
+      new Cookies().set('userToken',response.data.success.token,{maxAge:3600});
+      this.setState({
+        usertoken:response.data.success.token,
+        loginError:''
+      },()=>this.getUserDetails());
+    })
+    .catch((error)=>{this.setState({loginError:error.response.data.error})});
+  }
+
+  logout(){
+    this.setState({
+      usertoken:'',
+      username:'',
+      orderHistory:[]
+    });
+    new Cookies().remove('userToken');
+  }
+
+  register(event, name,email,password,confirm_password){
+    event.preventDefault();
+    axios.post(process.env.REACT_APP_API_URL+'api/users',{
+        name:name,            
+        email:email,
+        password:password,
+        confirm_password:confirm_password
+    })
+    .then((response) =>{
+      this.setState({
+        usertoken:response.data.success.token,
+        username:response.data.success.name,
+        registerError:[]
+      });
+      new Cookies().set('userToken',response.data.success.token,{maxAge:3600});
+    })
+    .catch((error)=>{
+      //this.setState({registerError:error.response.data.error})
+      console.log(error)
+      //console.log(Array.from(error.response.data.error));
+    });
   }
 
   updateOrderTotal(){
@@ -60,7 +150,7 @@ class App extends React.Component {
     }else{
       this.setState((prevState)=>({ 
         order:prevState.order.concat({id:item.id,name:item.name,quantity:parseInt(item.quantity),price:parseFloat(item.price),subtotal:parseFloat(item.subtotal)})
-       }));  
+       }));
     }
     this.updateOrderTotal();
 	}
@@ -118,13 +208,24 @@ class App extends React.Component {
     }
     this.setState({errors});
     if(errors.length===0){
-      axios.post(process.env.REACT_APP_API_URL+'api/orders',{
-        items:this.state.order,
-        name:this.state.name,
-        phone:this.state.phone,
-        address:this.state.address,
-        price:this.state.order_total
-      })
+      let headers=[];
+      if(this.state.username===''){
+        headers={'Accept':'application/json','Authorization':'Bearer '+this.state.usertoken}
+      }
+      const request= axios.create({
+        baseURL:process.env.REACT_APP_API_URL,
+        url:'api/orders',
+        headers:headers,
+        data:{
+          items:this.state.order,
+          name:this.state.name,
+          phone:this.state.phone,
+          address:this.state.address,
+          price:this.state.order_total
+        }
+      });
+  
+      request.post()
       .then((response)=>(
         //console.log(response.data)))
         this.orderCreated(response.data)))
@@ -135,7 +236,8 @@ class App extends React.Component {
   render(){
     return (
       <div className="App">
-        <Header />
+        <Header/>
+        {this.state.username==='' ? <LoginPanel login={this.login} register={this.register} loginError={this.state.loginError} registerError={this.state.registerError} />:<UserPanel username={this.state.username} orderHistory={this.state.orderHistory} logout={this.logout} />}
         <Menu pizzas={this.state.pizzas} misc={this.state.misc_items} rate={this.state.usd_rate} handleAddItem={this.handleAddItem} />
         <Check items={this.state.order} total={this.state.order_total} rate={this.state.usd_rate} errors={this.state.errors} address={this.state.address} phone={this.state.phone} name={this.state.name} delivery={this.state.delivery} handleChangeQuantityItem= {this.handleChangeQuantityItem} handleRemoveItem={this.handleRemoveItem} handleInputChange={this.handleInputChange} submitOrder={this.submitOrder}/>
       </div>
